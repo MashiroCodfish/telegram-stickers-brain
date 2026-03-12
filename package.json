@@ -1,7 +1,7 @@
 {
   "name": "@roitium/telegram-stickers-brain",
   "version": "1.0.0",
-  "description": "Fresh OpenClaw Telegram sticker search plugin built around Gemini Embedding 2 and local vector similarity search.",
+  "description": "OpenClaw Telegram sticker search plugin built around Gemini Embedding 2 and local vector similarity search.",
   "main": "index.js",
   "openclaw": {
     "extensions": [
@@ -44,6 +44,7 @@
     "openclaw.plugin.json",
     "README.md",
     "docs/AGENT_INSTALL.md",
+    "docs/OPENCLAW_AUTO_INSTALL.md",
     "LICENSE",
     "package.json"
   ]

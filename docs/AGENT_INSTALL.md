@@ -1,17 +1,16 @@
 # Agent Install Guide: telegram-stickers-brain 1.0.0
 
-Use this document when another agent or operator needs to install the minimal sticker-search plugin.
+Use this document when another agent or operator needs to install and verify the plugin.
 
 ## Goal
 
-Install a clean OpenClaw plugin that does only this:
+Install `telegram-stickers-brain` for Telegram sticker semantic search with:
 
-- sync Telegram sticker sets manually
-- embed stickers with Gemini Embedding 2
-- store vectors locally in SQLite
-- search locally with cosine similarity
-
-This version does **not** use caption generation or other LLM-style generation steps.
+- manual sticker-set sync
+- optional automatic collection
+- Gemini Embedding 2 indexing
+- local SQLite vector storage
+- in-memory cosine similarity search
 
 ## Preconditions
 
@@ -22,7 +21,7 @@ Before installing, verify all of these are true:
 - You have a Gemini API key for embeddings
 - You can restart the OpenClaw Gateway on this machine
 - Node.js 18+ is available
-- `ffmpeg` is available if animated/video stickers need preview extraction
+- `ffmpeg` is available if animated or video stickers need preview extraction
 
 ## Install paths
 
@@ -65,7 +64,7 @@ Write config under:
 plugins.entries.telegram-stickers-brain
 ```
 
-### Minimal config example
+### Minimal config
 
 ```json5
 {
@@ -76,13 +75,16 @@ plugins.entries.telegram-stickers-brain
         "config": {
           "embeddingApiKey": "YOUR_GEMINI_API_KEY",
           "embeddingModel": "gemini-embedding-2-preview",
-          "embeddingDimensions": 768
+          "embeddingDimensions": 768,
+          "autoCollect": true
         }
       }
     }
   }
 }
 ```
+
+Set `autoCollect` to `false` if you want a fully manual workflow.
 
 ## Restart
 
@@ -143,7 +145,7 @@ get_sticker_stats({})
 Expected result shape:
 
 ```text
-当前语义索引中共有 X 张表情包，当前同步队列中有 Y 个合集。
+当前语义索引中共有 X 张表情包，当前同步队列中有 Y 个合集，自动收集目前为开启/关闭。
 ```
 
 ### 6. Search test
@@ -160,36 +162,25 @@ Expected result shape:
 {"sticker_id":"..."}
 ```
 
-## Operational notes
-
-- The plugin stores vectors in local SQLite
-- Search happens locally in memory using cosine similarity
-- There is no caption-generation model in the indexing path
-- The sync flow is manual-first and queue-based
-- Animated/video sticker preview extraction benefits from `ffmpeg`
-
-## First failure checks
-
-If installation looks correct but usage fails, inspect these first:
-
-1. Telegram bot token missing or invalid
-2. Gemini embedding API key missing or invalid
-3. Plugin not restarted after config change
-4. No sticker sets have been synced yet
-5. `ffmpeg` missing for animated/video preview extraction
-
 ## Recommended smoke test flow
 
 1. Install plugin
-2. Enable config with embedding API key
-3. Restart Gateway
+2. Configure the embedding API key
+3. Restart the Gateway
 4. Sync one known sticker set
 5. Run `get_sticker_stats`
 6. Run `search_sticker_by_emotion`
 7. Send the returned sticker id in chat
 
-## Exact tool intent summary
+## Operational notes
+
+- Vectors are stored in local SQLite
+- Search runs locally in memory using cosine similarity
+- Automatic collection is optional and does not change the indexing/search core
+- Animated or video sticker preview extraction benefits from `ffmpeg`
+
+## Tool intent summary
 
 - `sync_sticker_set_by_name`: queue a Telegram sticker set for indexing
-- `get_sticker_stats`: report indexed sticker count and queue size
+- `get_sticker_stats`: report indexed sticker count, queue size, and auto-collection state
 - `search_sticker_by_emotion`: semantic lookup that returns a Telegram `sticker_id`

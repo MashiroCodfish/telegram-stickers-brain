@@ -1,43 +1,17 @@
 # telegram-stickers-brain
 
-`telegram-stickers-brain` is a fresh OpenClaw plugin line focused on one thing only:
+`telegram-stickers-brain` is an OpenClaw plugin for semantic Telegram sticker search.
 
-**Gemini Embedding 2 + local vector search for Telegram stickers.**
+It syncs Telegram sticker sets, builds embeddings with **Gemini Embedding 2**, stores vectors in **local SQLite**, and searches them in memory with cosine similarity.
 
-That is the whole idea.
+## Features
 
-## Design rules
-
-This plugin intentionally does **not** include:
-
-- LLM caption generation
-- VLM / image description models
-- sqlite-vec
-- local embedding models
-- llama / embeddinggemma / Ollama fallback paths
-- `.qmd` metadata sidecars
-- automatic sticker-set collection
-- extra background maintenance jobs
-
-It keeps a single narrow path:
-
-```text
-manual sticker-set sync -> Embedding 2 -> local SQLite storage -> in-memory cosine search -> sticker_id
-```
-
-## What it does
-
-- Sync a Telegram sticker set by name or `t.me/addstickers/...` link
-- Build embeddings with **Gemini Embedding 2**
-- Store vectors locally in **SQLite**
-- Load vectors into memory for fast cosine similarity search
-- Return Telegram `sticker_id` values for agent-side sticker sending
-
-## Exposed tools
-
-- `sync_sticker_set_by_name`
-- `get_sticker_stats`
-- `search_sticker_by_emotion`
+- Sync sticker sets from a set name or `t.me/addstickers/...` link
+- Optional automatic collection of newly seen Telegram sticker sets
+- Gemini Embedding 2 for both sticker indexing and query embedding
+- Local SQLite vector storage
+- Fast in-memory similarity search
+- Returns Telegram `sticker_id` values for agent-side sticker sending
 
 ## Requirements
 
@@ -45,11 +19,11 @@ manual sticker-set sync -> Embedding 2 -> local SQLite storage -> in-memory cosi
 - A working Telegram bot token
 - A Gemini API key for embeddings
 - Node.js **18+**
-- `ffmpeg` recommended for animated / video stickers (`.tgs`, `.webm`) so the plugin can extract a preview frame
+- `ffmpeg` recommended for animated or video stickers (`.tgs`, `.webm`) so preview frames can be extracted
 
 ## Install
 
-### From GitHub source
+### From source
 
 ```bash
 git clone https://github.com/MashiroCodfish/telegram-stickers-brain.git
@@ -58,19 +32,19 @@ npm install
 openclaw plugins install .
 ```
 
-Then restart the Gateway.
+Restart the Gateway after installation.
 
-### From npm (after publish)
+### From npm
 
 ```bash
 openclaw plugins install @roitium/telegram-stickers-brain
 ```
 
-Then restart the Gateway.
+Restart the Gateway after installation.
 
-## Config
+## Configuration
 
-This plugin only needs embedding-related config.
+Configure the plugin under `plugins.entries.telegram-stickers-brain`.
 
 ```json5
 {
@@ -81,7 +55,8 @@ This plugin only needs embedding-related config.
         "config": {
           "embeddingApiKey": "YOUR_GEMINI_API_KEY",
           "embeddingModel": "gemini-embedding-2-preview",
-          "embeddingDimensions": 768
+          "embeddingDimensions": 768,
+          "autoCollect": true
         }
       }
     }
@@ -91,45 +66,63 @@ This plugin only needs embedding-related config.
 
 ### Config fields
 
-| Field | Required | Default | Notes |
+| Field | Required | Default | Description |
 | --- | --- | --- | --- |
-| `embeddingApiKey` | usually yes | none | Gemini API key for embedding calls |
-| `embeddingModel` | no | `gemini-embedding-2-preview` | Embedding model used for sticker and query vectors |
-| `embeddingDimensions` | no | `768` | Integer between `128` and `3072` |
+| `embeddingApiKey` | usually yes | none | Gemini API key used for embedding calls |
+| `embeddingModel` | no | `gemini-embedding-2-preview` | Embedding model used for stickers and queries |
+| `embeddingDimensions` | no | `768` | Output dimensionality for vectors |
+| `autoCollect` | no | `true` | Automatically queue newly seen Telegram sticker sets |
 
 If `embeddingApiKey` is omitted, the plugin also checks:
 
 - `GEMINI_API_KEY`
 - `GOOGLE_API_KEY`
 
-## How indexing works
+## Tools
 
-When you sync a sticker set:
+The plugin exposes these tools to the agent:
 
-1. The plugin fetches the sticker set from Telegram
-2. Each sticker file is downloaded
-3. If needed, a preview image is extracted with `ffmpeg`
-4. The sticker is embedded with **Gemini Embedding 2**
-5. The normalized vector is stored in local SQLite
-6. Search loads vectors into memory and uses cosine similarity
+- `sync_sticker_set_by_name`
+- `get_sticker_stats`
+- `search_sticker_by_emotion`
 
-There is no caption-generation step.
-There is no text-generation model in the indexing path.
+## How it works
 
-If a sticker preview cannot be built, the plugin still uses Embedding 2 on minimal metadata (`emoji`, `set name`, `file id`) so the sticker can remain indexable without adding a separate generation stack.
+### Indexing
 
-## Data layout
+When a sticker set is synced:
 
-This plugin keeps local state very small:
+1. The plugin fetches the set from Telegram
+2. Sticker files are downloaded
+3. A preview image is used directly or extracted with `ffmpeg`
+4. Gemini Embedding 2 generates normalized vectors
+5. Vectors are stored in local SQLite
 
-- `STATE_DIR/telegram-stickers-brain.sqlite` - local vector index
-- `STATE_DIR/telegram-stickers-brain-tmp/` - temporary preview files during conversion
+### Search
 
-There are no `.qmd` metadata files in this version.
+When a query is searched:
 
-## Search behavior
+1. The query is embedded with Gemini Embedding 2
+2. Sticker vectors are loaded into memory
+3. Cosine similarity is computed locally
+4. The best match is returned as a Telegram `sticker_id`
 
-`search_sticker_by_emotion` works best with concrete Chinese emotion / action / trait phrases.
+## Typical workflow
+
+### Manual workflow
+
+1. Sync a sticker set
+2. Let indexing finish
+3. Search with an emotion or action query
+4. Send the returned sticker
+
+### Optional automatic collection
+
+If `autoCollect` is enabled, newly seen Telegram sticker sets can be queued automatically and indexed in the background.
+
+## Search tips
+
+Concrete Chinese emotion / action / trait phrases work best.
 
 Examples:
 
@@ -138,42 +131,38 @@ Examples:
 - `委屈 哭哭`
 - `得意 比耶`
 
-The tool returns JSON text like:
+Typical result format:
 
 ```json
 {"sticker_id":"CAACAgUAAxkBA..."}
 ```
 
-Your agent can then send that sticker through the message tool.
+## Local data
 
-## Minimal operations model
+The plugin stores local state in:
 
-This plugin is intentionally manual-first:
-
-- sync a set
-- index it
-- search it
-- send the result
-
-No extra automation is required for the core workflow.
+- `STATE_DIR/telegram-stickers-brain.sqlite` — vector index
+- `STATE_DIR/telegram-stickers-brain-tmp/` — temporary preview files
+- `STATE_DIR/telegram/sticker-cache.json` — used by optional automatic collection
 
 ## Packaging
 
-Create a package tarball with:
+Create a tarball with:
 
 ```bash
 npm pack
 ```
 
-OpenClaw can install from a local tarball too:
+OpenClaw can also install from a local tarball:
 
 ```bash
 openclaw plugins install ./roitium-telegram-stickers-brain-1.0.0.tgz
 ```
 
-## Agent install guide
+## Installation guides
 
-See: [docs/AGENT_INSTALL.md](docs/AGENT_INSTALL.md)
+- Agent/operator guide: [docs/AGENT_INSTALL.md](docs/AGENT_INSTALL.md)
+- OpenClaw auto-install guide: [docs/OPENCLAW_AUTO_INSTALL.md](docs/OPENCLAW_AUTO_INSTALL.md)
 
 ## License
 

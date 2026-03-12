@@ -22,6 +22,11 @@
         "minimum": 128,
         "maximum": 3072,
         "description": "Output dimensionality for embedding vectors"
+      },
+      "autoCollect": {
+        "type": "boolean",
+        "default": true,
+        "description": "Whether to automatically queue newly seen Telegram sticker sets from incoming sticker traffic"
       }
     }
   },
@@ -36,6 +41,9 @@
     },
     "embeddingDimensions": {
       "label": "Embedding Dimensions"
+    },
+    "autoCollect": {
+      "label": "Auto Collect New Sets"
     }
   }
 }

@@ -10,6 +10,7 @@ module.exports = function registerTelegramStickersBrain(api) {
   const STATE_DIR = api.runtime.state.resolveStateDir();
   const INDEX_DB_PATH = path.join(STATE_DIR, `${PLUGIN_ID}.sqlite`);
   const TMP_DIR = path.join(STATE_DIR, `${PLUGIN_ID}-tmp`);
+  const CORE_CACHE_FILE = path.join(STATE_DIR, 'telegram', 'sticker-cache.json');
 
   fs.mkdirSync(TMP_DIR, { recursive: true });
 
@@ -24,6 +25,7 @@ module.exports = function registerTelegramStickersBrain(api) {
 
   const syncQueue = [];
   const queuedSets = new Set();
+  const recentQueuedSets = new Map();
   let syncRunning = false;
 
   function getPluginConfig() {
@@ -59,6 +61,10 @@ module.exports = function registerTelegramStickersBrain(api) {
     return 768;
   }
 
+  function getAutoCollectEnabled() {
+    return getPluginConfig().autoCollect !== false;
+  }
+
   function getBotToken() {
     const token = api.config?.channels?.telegram?.botToken
       || process.env.TELEGRAM_BOT_TOKEN
@@ -75,6 +81,11 @@ module.exports = function registerTelegramStickersBrain(api) {
       .replace(/[ ]{2,}/g, ' ')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
+  }
+
+  function parseTs(value) {
+    const ts = value ? new Date(value).getTime() : NaN;
+    return Number.isFinite(ts) ? ts : 0;
   }
 
   function normalizeVector(values) {
@@ -219,6 +230,33 @@ module.exports = function registerTelegramStickersBrain(api) {
     return Number(row?.count || 0);
   }
 
+  function ensureCoreCache() {
+    const dir = path.dirname(CORE_CACHE_FILE);
+    fs.mkdirSync(dir, { recursive: true });
+    if (!fs.existsSync(CORE_CACHE_FILE)) {
+      fs.writeFileSync(CORE_CACHE_FILE, JSON.stringify({ stickers: {} }, null, 2));
+    }
+  }
+
+  function readCoreCache() {
+    ensureCoreCache();
+    try {
+      const parsed = JSON.parse(fs.readFileSync(CORE_CACHE_FILE, 'utf8'));
+      if (!parsed || typeof parsed !== 'object') return { stickers: {} };
+      if (!parsed.stickers || typeof parsed.stickers !== 'object') parsed.stickers = {};
+      return parsed;
+    } catch (e) {
+      api.logger.warn(`[Stickers] Failed to read core sticker cache: ${e.message}`);
+      return { stickers: {} };
+    }
+  }
+
+  function getSenderStickers(cache, senderId) {
+    return Object.values(cache?.stickers || {})
+      .filter((item) => item && item.receivedFrom === `telegram:${senderId}` && item.setName)
+      .sort((a, b) => parseTs(b.cachedAt) - parseTs(a.cachedAt));
+  }
+
   function guessMimeType(filePathValue) {
     const ext = String(path.extname(filePathValue || '')).toLowerCase();
     switch (ext) {
@@ -347,17 +385,17 @@ module.exports = function registerTelegramStickersBrain(api) {
     }
 
     if (parts.length === 0) {
-      const fallbackText = [
+      const metadataText = [
         emoji ? `emoji: ${emoji}` : '',
         setName ? `set: ${setName}` : '',
         fileUniqueId ? `id: ${fileUniqueId}` : '',
       ].filter(Boolean).join('\n');
 
-      if (!fallbackText) {
+      if (!metadataText) {
         throw new Error('No image preview or metadata available to embed');
       }
 
-      parts.push({ text: fallbackText });
+      parts.push({ text: metadataText });
     }
 
     const response = await getEmbeddingModel().embedContent({
@@ -526,16 +564,76 @@ module.exports = function registerTelegramStickersBrain(api) {
     }
   }
 
-  function queueSetOnce(setName) {
+  function queueSetOnce(setName, reason = 'manual') {
     if (!setName) return false;
-    if (queuedSets.has(setName)) return false;
 
+    const now = Date.now();
+    const lastQueuedAt = recentQueuedSets.get(setName) || 0;
+    if (queuedSets.has(setName) || (now - lastQueuedAt) < 10 * 60 * 1000) {
+      return false;
+    }
+
+    recentQueuedSets.set(setName, now);
     queuedSets.add(setName);
     syncQueue.push(setName);
+    api.logger.info(`[Stickers] Queued set ${setName} (${reason})`);
     processSyncQueue().catch((e) => {
       api.logger.error(`[Stickers] Queue processing crashed: ${e.message}`);
     });
     return true;
+  }
+
+  if (api.on) {
+    api.on('message_received', async (event) => {
+      const channel = event.metadata?.channel || event.metadata?.originatingChannel;
+      if (channel !== 'telegram') return;
+      if (!getAutoCollectEnabled()) return;
+      if (!event.content || (!event.content.includes('<media:sticker>') && !event.content.includes('sticker'))) return;
+
+      let senderId;
+      let baselineLatestTs = 0;
+
+      try {
+        senderId = event.metadata?.senderId || event.from?.split(':')?.[1];
+        if (!senderId) return;
+        const cache = readCoreCache();
+        const existing = getSenderStickers(cache, senderId);
+        baselineLatestTs = existing.length > 0 ? parseTs(existing[0].cachedAt) : 0;
+      } catch (e) {
+        api.logger.warn(`[Stickers] Failed to capture baseline sticker cache: ${e.message}`);
+      }
+
+      setTimeout(() => {
+        try {
+          if (!senderId) return;
+          const cache = readCoreCache();
+          const senderStickers = getSenderStickers(cache, senderId);
+          if (senderStickers.length === 0) return;
+
+          const newStickers = senderStickers.filter((item) => parseTs(item.cachedAt) > baselineLatestTs + 1);
+          let matchedSticker = newStickers[0] || null;
+
+          if (!matchedSticker) {
+            const now = Date.now();
+            const recent = senderStickers.filter((item) => (now - parseTs(item.cachedAt)) <= 15 * 1000);
+            const uniqueRecentSets = [...new Set(recent.map((item) => item.setName))];
+            if (recent.length === 1 || uniqueRecentSets.length === 1) {
+              matchedSticker = recent[0];
+              api.logger.info(`[Stickers] Falling back to recent sticker match for sender ${senderId}: ${matchedSticker.setName}`);
+            }
+          }
+
+          if (!matchedSticker?.setName) {
+            api.logger.warn(`[Stickers] Could not confidently resolve sticker set for sender ${senderId}; skipping auto-sync to avoid false positives.`);
+            return;
+          }
+
+          queueSetOnce(matchedSticker.setName, `auto-detect sender=${senderId} sticker=${matchedSticker.fileUniqueId || 'unknown'}`);
+        } catch (e) {
+          api.logger.error(`[Stickers] Failed to detect sticker set from cache: ${e.message}`);
+        }
+      }, 2500);
+    });
   }
 
   api.registerTool({
@@ -559,7 +657,7 @@ module.exports = function registerTelegramStickersBrain(api) {
           return { content: [{ type: 'text', text: '无法从你提供的参数中提取合集名称，请检查格式。' }] };
         }
 
-        const queued = queueSetOnce(targetSetName);
+        const queued = queueSetOnce(targetSetName, 'manual-tool');
         if (!queued) {
           return { content: [{ type: 'text', text: `表情包合集 ${targetSetName} 已经在同步队列里了。` }] };
         }
@@ -584,10 +682,11 @@ module.exports = function registerTelegramStickersBrain(api) {
     async execute() {
       const indexedCount = getIndexedStickerCount();
       const queuedCount = syncQueue.length + (syncRunning ? 1 : 0);
+      const autoCollectText = getAutoCollectEnabled() ? '开启' : '关闭';
       return {
         content: [{
           type: 'text',
-          text: `当前语义索引中共有 ${indexedCount} 张表情包，当前同步队列中有 ${queuedCount} 个合集。`
+          text: `当前语义索引中共有 ${indexedCount} 张表情包，当前同步队列中有 ${queuedCount} 个合集，自动收集目前为${autoCollectText}。`
         }]
       };
     }
@@ -624,5 +723,6 @@ module.exports = function registerTelegramStickersBrain(api) {
   });
 
   ensureIndexDb();
+  ensureCoreCache();
   loadSearchCache();
 };
