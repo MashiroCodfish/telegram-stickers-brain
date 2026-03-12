@@ -4,6 +4,8 @@
 
 A Telegram sticker chat enhancement plugin for **OpenClaw**.
 
+OpenClaw already has native Telegram sticker send and cached sticker search support. This project is not about making stickers possible in the first place, but about making sticker usage in chat more natural, proactive, and context-aware.
+
 Its goal is simple: help the agent use stickers more naturally and proactively in chat, instead of replying with plain text only.
 
 ## Screenshot Example
@@ -69,6 +71,8 @@ The core path is very small:
 8. Return the best matching Telegram `sticker_id` so it can be sent in chat
 
 If `autoCollect` is enabled, newly seen sticker sets in chats can be queued automatically. The indexing and search core stays the same.
+
+Unlike OpenClaw's native cached text matching over description / emoji / setName, this plugin turns sticker selection into a semantic retrieval problem, which makes proactive sticker use in chat much more context-aware.
 
 The plugin exposes these three tools to OpenClaw:
 
