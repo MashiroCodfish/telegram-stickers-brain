@@ -6,7 +6,7 @@ const Database = require('better-sqlite3');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 module.exports = function registerTelegramStickersBrain(api) {
-  const PLUGIN_ID = 'telegram-stickers-brain';
+  const PLUGIN_ID = 'telegram-sticker-search';
   const STATE_DIR = api.runtime.state.resolveStateDir();
   const INDEX_DB_PATH = path.join(STATE_DIR, `${PLUGIN_ID}.sqlite`);
   const TMP_DIR = path.join(STATE_DIR, `${PLUGIN_ID}-tmp`);

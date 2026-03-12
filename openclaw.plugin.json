@@ -1,6 +1,6 @@
 {
-  "id": "telegram-stickers-brain",
-  "name": "Telegram Stickers Brain",
+  "id": "telegram-sticker-search",
+  "name": "Telegram Sticker Search",
   "description": "Minimal Telegram sticker semantic search for OpenClaw using Gemini Embedding 2 and local SQLite/in-memory vector search",
   "version": "1.0.0",
   "configSchema": {

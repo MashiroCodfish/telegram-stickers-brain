@@ -1,6 +1,6 @@
 [中文](./README.md) | [English](./README.en.md)
 
-# telegram-stickers-brain
+# telegram-sticker-search
 
 A Telegram sticker semantic search plugin for **OpenClaw**.
 
@@ -13,18 +13,18 @@ Users should be able to say things like “send a sad one” or “give me a hap
 
 ### Option 1: Install from the release package (recommended)
 
-Download `roitium-telegram-stickers-brain-1.0.0.tgz` from the release page, then run:
+Download `telegram-sticker-search-1.0.0.tgz` from the release page, then run:
 
 ```bash
-openclaw plugins install ./roitium-telegram-stickers-brain-1.0.0.tgz
+openclaw plugins install ./telegram-sticker-search-1.0.0.tgz
 openclaw gateway restart
 ```
 
 ### Option 2: Install from source
 
 ```bash
-git clone https://github.com/MashiroCodfish/telegram-stickers-brain.git
-cd telegram-stickers-brain
+git clone https://github.com/MashiroCodfish/telegram-sticker-search.git
+cd telegram-sticker-search
 npm install
 openclaw plugins install .
 openclaw gateway restart
@@ -33,7 +33,7 @@ openclaw gateway restart
 ### Option 3: Install from npm
 
 ```bash
-openclaw plugins install @roitium/telegram-stickers-brain
+openclaw plugins install telegram-sticker-search
 openclaw gateway restart
 ```
 
@@ -76,7 +76,7 @@ If `autoCollect` is enabled, newly seen sticker sets in chats can be queued auto
 Write config under:
 
 ```text
-plugins.entries.telegram-stickers-brain
+plugins.entries.telegram-sticker-search
 ```
 
 Minimal example:
@@ -85,7 +85,7 @@ Minimal example:
 {
   "plugins": {
     "entries": {
-      "telegram-stickers-brain": {
+      "telegram-sticker-search": {
         "enabled": true,
         "config": {
           "embeddingApiKey": "YOUR_GEMINI_API_KEY",

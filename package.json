@@ -1,5 +1,5 @@
 {
-  "name": "@roitium/telegram-stickers-brain",
+  "name": "telegram-sticker-search",
   "version": "1.0.0",
   "description": "OpenClaw Telegram sticker search plugin built around Gemini Embedding 2 and local vector similarity search.",
   "main": "index.js",
@@ -23,11 +23,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MashiroCodfish/telegram-stickers-brain.git"
+    "url": "git+https://github.com/MashiroCodfish/telegram-sticker-search.git"
   },
-  "homepage": "https://github.com/MashiroCodfish/telegram-stickers-brain#readme",
+  "homepage": "https://github.com/MashiroCodfish/telegram-sticker-search#readme",
   "bugs": {
-    "url": "https://github.com/MashiroCodfish/telegram-stickers-brain/issues"
+    "url": "https://github.com/MashiroCodfish/telegram-sticker-search/issues"
   },
   "publishConfig": {
     "access": "public"

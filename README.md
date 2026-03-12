@@ -1,6 +1,6 @@
 [中文](./README.md) | [English](./README.en.md)
 
-# telegram-stickers-brain
+# telegram-sticker-search
 
 一个给 **OpenClaw** 用的 Telegram 表情包语义搜索插件。
 
@@ -13,18 +13,18 @@
 
 ### 方式一：从 Release 包安装（推荐）
 
-先下载 Release 页面里的 `roitium-telegram-stickers-brain-1.0.0.tgz`，然后执行：
+先下载 Release 页面里的 `telegram-sticker-search-1.0.0.tgz`，然后执行：
 
 ```bash
-openclaw plugins install ./roitium-telegram-stickers-brain-1.0.0.tgz
+openclaw plugins install ./telegram-sticker-search-1.0.0.tgz
 openclaw gateway restart
 ```
 
 ### 方式二：从源码安装
 
 ```bash
-git clone https://github.com/MashiroCodfish/telegram-stickers-brain.git
-cd telegram-stickers-brain
+git clone https://github.com/MashiroCodfish/telegram-sticker-search.git
+cd telegram-sticker-search
 npm install
 openclaw plugins install .
 openclaw gateway restart
@@ -33,7 +33,7 @@ openclaw gateway restart
 ### 方式三：从 npm 安装
 
 ```bash
-openclaw plugins install @roitium/telegram-stickers-brain
+openclaw plugins install telegram-sticker-search
 openclaw gateway restart
 ```
 
@@ -76,7 +76,7 @@ openclaw gateway restart
 配置写在这里：
 
 ```text
-plugins.entries.telegram-stickers-brain
+plugins.entries.telegram-sticker-search
 ```
 
 最小配置示例：
@@ -85,7 +85,7 @@ plugins.entries.telegram-stickers-brain
 {
   "plugins": {
     "entries": {
-      "telegram-stickers-brain": {
+      "telegram-sticker-search": {
         "enabled": true,
         "config": {
           "embeddingApiKey": "YOUR_GEMINI_API_KEY",

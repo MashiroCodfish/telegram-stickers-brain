@@ -1,4 +1,4 @@
-# 安装文档：telegram-stickers-brain 1.0.0
+# 安装文档：telegram-sticker-search 1.0.0
 
 这份文档是写给 **agent / 运维人员** 的。
 
@@ -32,8 +32,8 @@
 ### 方式一：源码安装
 
 ```bash
-git clone https://github.com/MashiroCodfish/telegram-stickers-brain.git
-cd telegram-stickers-brain
+git clone https://github.com/MashiroCodfish/telegram-sticker-search.git
+cd telegram-sticker-search
 npm install
 openclaw plugins install .
 ```
@@ -41,13 +41,13 @@ openclaw plugins install .
 ### 方式二：用 release 里的 tgz 安装
 
 ```bash
-openclaw plugins install ./roitium-telegram-stickers-brain-1.0.0.tgz
+openclaw plugins install ./telegram-sticker-search-1.0.0.tgz
 ```
 
 ### 方式三：npm 安装
 
 ```bash
-openclaw plugins install @roitium/telegram-stickers-brain
+openclaw plugins install telegram-sticker-search
 ```
 
 > 这个方式要在 npm 已发布后使用。
@@ -57,13 +57,13 @@ openclaw plugins install @roitium/telegram-stickers-brain
 插件 ID：
 
 ```text
-telegram-stickers-brain
+telegram-sticker-search
 ```
 
 配置路径：
 
 ```text
-plugins.entries.telegram-stickers-brain
+plugins.entries.telegram-sticker-search
 ```
 
 ## 最小配置
@@ -72,7 +72,7 @@ plugins.entries.telegram-stickers-brain
 {
   "plugins": {
     "entries": {
-      "telegram-stickers-brain": {
+      "telegram-sticker-search": {
         "enabled": true,
         "config": {
           "embeddingApiKey": "YOUR_GEMINI_API_KEY",
@@ -114,7 +114,7 @@ openclaw plugins list
 ### 2. 看插件详情
 
 ```bash
-openclaw plugins info telegram-stickers-brain
+openclaw plugins info telegram-sticker-search
 ```
 
 ### 3. 确认工具是否存在
