@@ -68,12 +68,25 @@ Configure the plugin under `plugins.entries.telegram-stickers-brain`.
 
 ### Config fields
 
-| Field | Required | Default | Description |
-| --- | --- | --- | --- |
-| `embeddingApiKey` | usually yes | none | Gemini API key used for embedding calls |
-| `embeddingModel` | no | `gemini-embedding-2-preview` | Embedding model used for stickers and queries |
-| `embeddingDimensions` | no | `768` | Output dimensionality for vectors |
-| `autoCollect` | no | `true` | Automatically queue newly seen Telegram sticker sets |
+- `embeddingApiKey`
+  - Required: usually yes
+  - Default: none
+  - Description: Gemini API key used for embedding calls
+
+- `embeddingModel`
+  - Required: no
+  - Default: `gemini-embedding-2-preview`
+  - Description: Embedding model used for stickers and queries
+
+- `embeddingDimensions`
+  - Required: no
+  - Default: `768`
+  - Description: Output dimensionality for vectors
+
+- `autoCollect`
+  - Required: no
+  - Default: `true`
+  - Description: Automatically queue newly seen Telegram sticker sets
 
 If `embeddingApiKey` is omitted, the plugin also checks:
 
