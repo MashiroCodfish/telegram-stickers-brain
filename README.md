@@ -2,10 +2,7 @@
 
 # telegram-sticker-search
 
-一个给 **OpenClaw** 用的 Telegram 表情包语义搜索插件。
-
-它的目标很直接：让 OpenClaw 能更自然地“按感觉”找表情包、发表情包。  
-你只需要正常告诉 agent 你想要什么风格的贴纸，比如“来个委屈一点的”“发个开心的”，不需要自己研究什么检索语法。
+一个给 **OpenClaw** 用的 Telegram 表情包语义搜索插件。让 OpenClaw 能更自然地“按感觉”找表情包、发表情包。  
 
 ---
 
@@ -36,14 +33,9 @@ openclaw gateway restart
 openclaw plugins install telegram-sticker-search
 openclaw gateway restart
 ```
-
-> 这条命令要等 npm 真正发布之后才能直接使用。
-
 ---
 
 ## 技术栈
-
-这个项目用到的东西很少，尽量保持简单：
 
 - **OpenClaw Plugin API**：把插件接入 OpenClaw
 - **Telegram Bot API**：拉取 sticker set 和 sticker 文件
@@ -55,8 +47,6 @@ openclaw gateway restart
 ---
 
 ## 实现原理
-
-整个流程只有一条主路径：
 
 1. 同步一个 Telegram 表情包合集
 2. 下载每张贴纸文件
