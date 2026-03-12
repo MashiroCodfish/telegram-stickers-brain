@@ -29,13 +29,17 @@ The target OpenClaw instance should already have:
 
 ## Automated install flow
 
-### Option A: install from npm
+### Option A: install from npm (after npm publish)
 
 ```bash
 openclaw plugins install @roitium/telegram-stickers-brain
 ```
 
+Use this path only after the package has been published to npm.
+
 ### Option B: install from a local tarball
+
+Download the release asset first, then install it:
 
 ```bash
 openclaw plugins install ./roitium-telegram-stickers-brain-1.0.0.tgz

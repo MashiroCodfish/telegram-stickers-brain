@@ -34,11 +34,13 @@ openclaw plugins install .
 
 Restart the Gateway after installation.
 
-### From npm
+### From npm (after npm publish)
 
 ```bash
 openclaw plugins install @roitium/telegram-stickers-brain
 ```
+
+Use this path only after the package has been published to npm.
 
 Restart the Gateway after installation.
 
