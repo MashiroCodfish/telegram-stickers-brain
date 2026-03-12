@@ -33,8 +33,6 @@
 openclaw plugins install telegram-sticker-search
 ```
 
-> 这个方式要在 npm 已发布后再用。
-
 ### 方式 B：用 release 里的 tgz 安装
 
 先下载 release 里的压缩包，再执行：
