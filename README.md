@@ -6,6 +6,10 @@
 
 它的目标很简单：让 agent 在聊天里更自然地主动使用贴纸，丰富对话，而不是只会发纯文字。
 
+## 截图示例
+
+![tg-stickers-chat screenshot](https://raw.githubusercontent.com/MashiroCodfish/tg-stickers-chat/main/IMG_9061.jpeg)
+
 ---
 
 ## 快速安装

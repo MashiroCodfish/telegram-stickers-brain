@@ -6,6 +6,10 @@ A Telegram sticker chat enhancement plugin for **OpenClaw**.
 
 Its goal is simple: help the agent use stickers more naturally and proactively in chat, instead of replying with plain text only.
 
+## Screenshot Example
+
+![tg-stickers-chat screenshot](https://raw.githubusercontent.com/MashiroCodfish/tg-stickers-chat/main/IMG_9061.jpeg)
+
 ---
 
 ## Quick Install
