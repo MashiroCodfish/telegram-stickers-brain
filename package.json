@@ -43,6 +43,7 @@
     "index.js",
     "openclaw.plugin.json",
     "README.md",
+    "README.en.md",
     "docs/AGENT_INSTALL.md",
     "docs/OPENCLAW_AUTO_INSTALL.md",
     "LICENSE",
